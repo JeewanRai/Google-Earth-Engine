@@ -37,11 +37,15 @@ Black Layer
                                                                        True Color Composite                                   
 ![alt text](image-4.png)
 
-In a false color composite, near-infrared, shortwave infrared, and other non-visible wavelengths are mapped to visible colors (red, green, and blue) to enhance the visualization of certain features. For example, vegetation, water bodies, and urban areas can be more easily distinguished using false color composites.
+In a false color composite, near-infrared, shortwave infrared, and other non-visible wavelengths are mapped to visible colors (red, green, and blue) to enhance the visualization of certain features. For example, vegetation, water bodies, and urban areas can be more easily distinguished using false color composites.                                          
+
 ![alt text](image-5.png)                                            
 
-False color composites are essential in remote sensing and Earth observation because they allow us to visualize and analyze features and phenomena that are not easily detectable in natural color (true color) images.                                        
-![alt text](image-7.png)                                    ![alt text](image-8.png)                                                                   
+False color composites are essential in remote sensing and Earth observation because they allow us to visualize and analyze features and phenomena that are not easily detectable in natural color (true color) images.                                                                                                                                        
+
+![alt text](image-7.png)                                                                                                                                        
+
+![alt text](image-8.png)                                                                   
 ```js
 Map.addLayer(sent2, 
 {
