@@ -16,7 +16,7 @@ var sent2 = ee.Image("COPERNICUS/S2/20180422T012719_20180422T012714_T52LHM");
 print(sent2)
 
 // Add RGB composite to map, without parameters defined, before adding min and max value
-Map.addLayer(sent2,{bands:['B4','B3','B2']}, "Black Layer");
+Map.addLayer(sent2,{bands:['B4','B3','B2']}, "Black Layer", false);
 
 //Map.addLayer(image, { bands: ['B4', 'B3', 'B2'],min: 0,max: 0.3,palette: ['red', 'green', 'blue'],
 // opacity: 0.8,name: 'Landsat 8 RGB'}); without adding max and min value the region appears black
@@ -29,7 +29,7 @@ Map.addLayer(sent2,
   min: 0,
   max: 3000,
   // cannot apply palette when there is multiple bands
-}, 'Sentinel-2 RGB');
+}, 'Sentinel-2 RGB True Color Composite', false);
 ```
 Output:                                                            
 Black Layer                          
@@ -41,4 +41,13 @@ In a false color composite, near-infrared, shortwave infrared, and other non-vis
 ![alt text](image-5.png)                                            
 
 False color composites are essential in remote sensing and Earth observation because they allow us to visualize and analyze features and phenomena that are not easily detectable in natural color (true color) images.                                        
-![alt text](image-7.png)                                    ![alt text](image-8.png)                                                 
+![alt text](image-7.png)                                    ![alt text](image-8.png)                                                                   
+```js
+Map.addLayer(sent2, 
+{
+  bands: ['B8', 'B4', 'B3'],
+  min: 0,
+  max: 3000,
+  // cannot apply palette when there is multiple bands
+}, 'Sentinel-2 RGB False Color Composite', false); // false will uncheck the layers so user can add layer as per requirement
+```
