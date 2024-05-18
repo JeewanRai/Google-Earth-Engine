@@ -55,3 +55,27 @@ Map.addLayer(sent2,
   // cannot apply palette when there is multiple bands
 }, 'Sentinel-2 RGB False Color Composite', false); // false will uncheck the layers so user can add layer as per requirement
 ```
+Output:                                                             
+False color composite                                                           
+
+![alt text](image-6.png)                                            
+
+To really build your understanding of how different wavelengths interact with surfaces, we are now going to load individual bands sequentially, from shorter to longer wavelengths. To display Band 1, the code is as follows:                                              
+
+```js
+Map.addLayer(sent2,{bands:['B1'], min:0, max:3000}, "Band B1", false);
+Map.addLayer(sent2,{bands:['B4'], min:0, max:3000}, "B4", false);
+Map.addLayer(sent2,{bands:['B8'], min:0, max:3000}, "B8", false);
+Map.addLayer(sent2,{bands:['B12'], min:0, max:3000}, "B12", false);
+```                                                                 
+Output:                                                             
+Band B1                                                                  
+
+![alt text](image-9.png)                                          
+ Band B4                                                                  
+ ![alt text](image-10.png)                                              
+ Band B8                                            
+![alt text](image-11.png)                                           
+Band B12                                                                
+![alt text](image-12.png)
+
