@@ -1,4 +1,6 @@
 # Google Earth Engine(Tutorial)
+# Tutorial 2
+[Click Here](https://www.geospatialecology.com/intro_rs_lab2/) for google like of the lession                                                        
 
 ![alt text](image.png)
 
@@ -78,4 +80,93 @@ Band B1
 ![alt text](image-11.png)                                           
 Band B12                                                                
 ![alt text](image-12.png)
+
+
+# Tutorial Lab 3
+[[Click Here]](https://www.geospatialecology.com/intro_rs_lab3/) for google like of the lession                                                                 
+Understanding spectral indices, each index is designed to highlight specific features on the Earth’s surface, such as vegetation health, water content, or soil properties.
+For example, the Normalized Difference Vegetation Index (NDVI) measures the greenness of vegetation by comparing the reflectance of visible and near-infrared 
+![alt text](image-1.png)
+```js
+//It is important to understand that we have now added access to the full Sentinel-2 image collection 
+// (i.e. every image that has been collected to date) to our script, but we want only signgle cloude 
+// free image from all the images; filter the image
+
+var image = ee.Image(sent2 // defines variable to store result of following operations
+.filterDate("2015-07-01", "2017-09-30") //sent2 referes to Sentinel-2 image collection object
+.filterBounds(campus)
+.sort("CLOUD_COVERAGE_ASSESSMENT")
+.first());
+```
+Sentinel-2 data, CLOUD_COVERAGE_ASSESSMENT is not a function but a metadata property associated with the images. It provides a numerical value representing the percentage of the image that is covered by clouds. This property is used to assess the quality of the image in terms of cloud cover.
+
+![alt text](image-2.png)
+![alt text](image-3.png)                                      
+
+```js
+var imageCollection = ee.ImageCollection('COPERNICUS/S2')
+  .filterDate('2020-01-01', '2020-12-31')  // Filter by date range
+  .filterBounds(campus)  // Filter by geographic region
+  .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 10)  // Filter by cloud coverage
+  .sort('SUN_ELEVATION', false)  // Sort by sun elevation
+  .first();  // Select the first image in the sorted collection
+
+print(imageCollection);
+
+```
+Metadata is like the “extra information” that comes along with any piece of data. It doesn’t contain the actual content, but it provides context and details about that content.                
+
+Wherever you click on the image, the band values at that point will be displayed in the Inspector window. Click over some different patch types (sports fields, mangroves, ocean, beach, houses) to see how the spectral profile changes. In the inspector section will see change in bands in the form of Histogram in different scenerios.
+
+```js
+//To look at this image, we need to add it to our mapping environment.
+//Code specifies that for a true colour image, bands 4,3 and 2 should be used in the RGB composite. 
+// Sentinel-2 image, which is at 10m resolution for the selected bands
+var trueColor = {
+  bands: ["B4", "B3", "B2"],
+  min: 0,
+  max: 3000
+};
+
+// Add the image to the map, using visualiation parameters
+Map.addLayer(image, trueColor, "True Color Image");
+```
+Output:                                                         
+
+![alt text](image-4.png)      
+Now let's have a look at a false colour composite - we need to bring in the near-infrared band (band 8) for this.       
+
+False-colour composites place the near infra-red band in the red channel, and we see a strong response to the chlorophyll content in green leaves. Vegetation that appears dark green in true colour, appearing bright red in the false-colour. Note the variations in red that can be seen in the vegetation bordering Rapid Creek. You will also see that "false-colour composite" has been added to the Layers tab in the map view.
+
+```js
+var falseColor = {
+  bands: ["B8", "B4", "B3"],
+  min: 0,
+  max: 3000
+};
+
+// Add the image to the map, using visualiation parameters
+Map.addLayer(image, falseColor, "False Color Image", false);
+```
+Output:                                                         
+
+![alt text](image-5.png)
+
+### Calculating NDVI
+Next, let's calculate the normalised-difference vegetation index (NDVI) for this image. NDVI is an index calculated from the RED and NIR bands, according to this equation:                       
+***NDVI = (NIR - RED)/(NIR + RED)***
+```js
+//Define variable NDVI from equation
+var NDVI = image.expression(
+        "(NIR - RED) / (NIR + RED)",
+        {
+          RED: image.select("B4"),    //  RED
+          NIR: image.select("B8"),    // NIR
+          BLUE: image.select("B2")    // BLUE
+        });
+
+    Map.addLayer(NDVI, {min: 0, max: 1}, "NDVI", false);
+```
+Output:                                                       
+![alt text](image-6.png)
 
