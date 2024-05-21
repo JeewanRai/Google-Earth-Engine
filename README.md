@@ -86,7 +86,7 @@ Band B12
 [[Click Here]](https://www.geospatialecology.com/intro_rs_lab3/) for google like of the lession                                                                 
 Understanding spectral indices, each index is designed to highlight specific features on the Earth’s surface, such as vegetation health, water content, or soil properties.
 For example, the Normalized Difference Vegetation Index (NDVI) measures the greenness of vegetation by comparing the reflectance of visible and near-infrared 
-![alt text](image-1.png)
+![alt text](image-13.png)
 ```js
 //It is important to understand that we have now added access to the full Sentinel-2 image collection 
 // (i.e. every image that has been collected to date) to our script, but we want only signgle cloude 
@@ -100,8 +100,8 @@ var image = ee.Image(sent2 // defines variable to store result of following oper
 ```
 Sentinel-2 data, CLOUD_COVERAGE_ASSESSMENT is not a function but a metadata property associated with the images. It provides a numerical value representing the percentage of the image that is covered by clouds. This property is used to assess the quality of the image in terms of cloud cover.
 
-![alt text](image-2.png)
-![alt text](image-3.png)                                      
+![alt text](image-14.png)
+![alt text](image-15.png)                                      
 
 ```js
 var imageCollection = ee.ImageCollection('COPERNICUS/S2')
@@ -133,7 +133,7 @@ Map.addLayer(image, trueColor, "True Color Image");
 ```
 Output:                                                         
 
-![alt text](image-4.png)      
+![alt text](image-16.png)      
 Now let's have a look at a false colour composite - we need to bring in the near-infrared band (band 8) for this.       
 
 False-colour composites place the near infra-red band in the red channel, and we see a strong response to the chlorophyll content in green leaves. Vegetation that appears dark green in true colour, appearing bright red in the false-colour. Note the variations in red that can be seen in the vegetation bordering Rapid Creek. You will also see that "false-colour composite" has been added to the Layers tab in the map view.
@@ -150,7 +150,7 @@ Map.addLayer(image, falseColor, "False Color Image", false);
 ```
 Output:                                                         
 
-![alt text](image-5.png)
+![alt text](image-17.png)
 
 ### Calculating NDVI
 Next, let's calculate the normalised-difference vegetation index (NDVI) for this image. NDVI is an index calculated from the RED and NIR bands, according to this equation:                       
@@ -168,5 +168,4 @@ var NDVI = image.expression(
     Map.addLayer(NDVI, {min: 0, max: 1}, "NDVI", false);
 ```
 Output:                                                       
-![alt text](image-6.png)
-
+![alt text](image-18.png)
