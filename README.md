@@ -169,3 +169,79 @@ var NDVI = image.expression(
 ```
 Output:                                                       
 ![alt text](image-18.png)
+
+## YouTube Tutorial
+![alt text](image-21.png)
+[Click Here](https://youtu.be/P5fgt_lr-HY?si=UVfleh_105uRlUTb) Youtube video like.
+```js
+// Initially make satellite view as default.
+Map.setOptions('SATELLITE');
+
+// Filter Bhutan border
+var Bhutan_Border = ee.FeatureCollection("FAO/GAUL/2015/level0").filter(ee.Filter.eq("ADM0_NAME", "Bhutan"));
+
+// Add Bhutan border to map
+Map.addLayer(Bhutan_Border, {}, 'Bhutan Border');
+
+// Filter Chukha district
+var Dzongkhag = ee.FeatureCollection("FAO/GAUL/2015/level1").filter(ee.Filter.eq("ADM1_NAME", "Samtse"));
+
+// Add Chukha district to map
+Map.addLayer(Dzongkhag, {color: 'white'}, 'Dzongkhag');
+Map.centerObject(Dzongkhag, 8)
+
+//Importing the LST image collection, MODIS (Moderate Resolution Imaging Spectroradiometer) 
+//Land Surface Temperature (LST) data. Importing daily land surface temperature data from the MODIS instrument
+var modis =ee.ImageCollection("MODIS/061/MOD11A1")
+.filterDate("2022-01-01", "2022-12-31")
+.select('LST_Day_1km') //1km resolution data is selected form MODIS bands area
+
+//converting image collection from kelvin to celcius for each images in the collection with function
+ // modis.map will apply function taking  one argument to each image on modis varaible and store result 
+ // in modis_kel_2_cel variable 
+ var modis_kel_2_cel = modis.map(function(img) // defining anonymous function
+ {
+   return img
+   .multiply(0.02) // Scaled Temperature=Original Temperature×0.02, given in MODIS band section
+   .subtract(273.15)// Temperature in Celsius=Scaled Temperature−273.15
+ // copy specific property from original image to new image, times stamp 
+  // time at which the image is captured.
+   .copyProperties(img, ['system:time_start'])
+ });
+
+// Create chart of LST temporal Analysis
+var Time_Series_Chart = ui.Chart.image.series({// is function where drawing chart with series means bands
+  imageCollection: modis_kel_2_cel, //which image data to display
+  region: Dzongkhag,// ROI to display
+  //reducers are used to aggregate or summarize data within a specified region and time period. 
+  //particularly useful when working with image collections, as it allows you to condense the 
+  // information from multiple images into a single value or set of values
+  //Image collections can contain a large number of images, each with many pixels. Reducers enable us to 
+  //summarize this wealth of data into a more manageable form, such as a single value per image or per time period.
+  // By applying reducers, we can compute various statistics over the data, such as mean, sum, median, standard 
+  // deviation, etc
+  reducer: ee.Reducer.mean(), 
+  scale: 1000, //converting km to meter
+  xProperty: "system:time_start"}) 
+  .setOptions({ //ets additional options for the chart.
+    title: "LST Temporal Analysis",
+    vAxis : {title : "LST Celcius"}
+  })
+print(Time_Series_Chart)
+
+//Image visulization, one image at a time, will take mean value of the images
+// So from Layout setting choose custom, stretch 100%, from pallet add multiple color of interest
+// then it can be imported as library with name imageVisParam otherwise each time 
+//code is rand have to add pallet. Map.addLayer(mean_image, {}, "Mean Image") was before importing imageVisParam
+var mean_image = modis_kel_2_cel.mean().clip(Dzongkhag)
+
+Map.addLayer(mean_image, imageVisParam, "Mean Image")
+
+```
+Output:      
+Bhutan map with boundry for district level and international Border leve.                                                             
+![alt text](image-22.png)                                                 
+
+![alt text](image-23.png)
+
+![alt text](image-24.png)
