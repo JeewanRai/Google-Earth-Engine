@@ -245,3 +245,162 @@ Bhutan map with boundry for district level and international Border leve.
 ![alt text](image-23.png)
 
 ![alt text](image-24.png)
+
+# Youtube video on Image Classification                                                                 
+
+[Click Here](https://code.earthengine.google.com/) link for  google earth engine code                                                                                
+```js
+// get cloud free image form Landst 8 Surface Reflectance Tier 1
+// filter to roi, filter to range ofdata, filter by cloud cover, select least cloud cover image
+var image = ee.Image(ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
+    .filterBounds(roi)
+    .filterDate('2016-05-01', '2016-06-30')
+    .sort('CLOUD_COVER')
+    .first());
+Map.addLayer(image, {bands: ['B4', 'B3', 'B2'],min:0, max: 3000}, 'True colour image');
+
+
+//after collecting training data of diffifferent classes need to merge into single collection
+// called FeatureCollection
+var classNames = factory.merge(nonfactory);
+print(classNames)
+
+// use featurecollection to drill through image and extract the reflectance data for each point
+// for every band
+// create training data overlaying the training points on the image, adds new properties to the
+// feature collection that represents image bands values at each point
+var bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']
+var training = image.select(bands).sampleRegions({
+  collection: classNames,
+  properties:['landcover'],
+  scale: 30
+});
+print(training);
+//can train the classifier algorithm by using our examples 
+//of what different landcover class look like from a multi-spectral perspective.
+var classifier = ee.Classifier.smileCart().train({
+  features: training,
+  classProperty: 'landcover',
+  inputProperties: bands
+});
+
+//The next step is then to apply this knowledge from our training to the rest of the image - 
+//using was was learnt from our supervised
+//collection to inform decisions about which class other pixels should belong to.
+//Run the classification
+var classified = image.select(bands).classify(classifier);
+
+//Display classification
+Map.centerObject(classNames, 11);
+Map.addLayer(classified,
+{min: 0, max: 3, palette: ['red', 'blue']},
+'classification');
+```
+
+# Supervised Image Classification Youtube Video
+[Click Here](https://code.earthengine.google.com/) link for  google earth engine code                                                               
+
+[Click Here](https://youtu.be/oMxRzB4mYV8?si=khynsdT3I22yJHJ0) link for youtube video part 1                                                                  
+
+[Click Here](https://youtu.be/4jmq1o1EGG8?si=Em7qnuRIEoa-aDfy) link for  youtube video part 2                                                           
+
+![alt text](image-26.png)
+
+```js
+// 1. Load Landsat 8 data for specific roi and specific data
+// to perform Supervised Image Classification need to defined roi
+// and load Landsat 8 image to google earth engine
+// zoom into roi and from map area select add marker
+var image = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
+  .filterDate('2021-01-01', '2021-01-31')
+  .filterBounds(roi)
+  .sort('CLOUD_COVER') // Sort by cloud cover percentage
+  .first(); // Select the least cloud-covered image
+// 2. set visulization parameter, 30m resolution
+var visParaTrue = {bands: ['B4', 'B3', 'B2'], min: 0, max: 3000, gamma: 1.5};
+// Add the image to the map
+Map.addLayer(image, visParaTrue, "Landsat 8 True Color 2020", false);
+
+// Center the map on the ROI with zoom level 8
+Map.centerObject(roi, 8);
+
+// 3. to perform supervised classification need to gather training data
+// to gather trainig data go to Geometry Imports and add new layer, 
+// while gathering training data the new added layer must be heighlight bold
+// form setting figure go to configure geometry import, given name for each class
+// import as  FeatureCollection and name properties common to all class and give
+// values to identify each class
+
+// 3. Create training data, importing trainig data to gee
+var label = 'classValue';
+var bands = ['B1', 'B2', 'B3', 'B4', 'B5', 'B7'];
+// defining variable input to extract bands from Landsat image
+var input = image.select(bands)
+
+//4. To import training data to supervised classification need to merge
+var training = vegetation.merge(water).merge(Building) 
+// to visulize the training data, run code and in the console  see the result
+// total 204 elements, click on features, click on feature (anyoneout of many)
+// click on properties and will see classValue 
+print(training)
+
+//5. Overlay the points on image to get trainig data and to extract lansat 8 bands
+var trainImage = input.sampleRegions({
+  collection: training,
+  properties : [label],
+  scale: 30
+  
+})
+//will be able to view bands along with features, click on features, click one
+// of the band from many and click on properties, each image class will have band
+// extracted form afformentioned bands
+print(trainImage)
+
+//6. Performe accuracy assissment of data before traning model
+// using 80% for traning and 20% for validation
+var trainData = trainImage.randomColumn(); // selects random column
+var trainSet = trainData.filter(ee.Filter.lessThan('random', 0.8)); // training data
+var testSet = trainData.filter(ee.Filter.greaterThanOrEquals('random', 0.8))// validation data
+
+// 6. Classification performance/ classification model
+// smileCart is regression classifier with decission tree algorithm
+var classifier = ee.Classifier.smileCart().train(trainSet, label, bands);
+
+//7. Classify the image in 4 classes
+var classified = input.classify(classifier);
+print(classified.getInfo()); //to print the details of the model/in colsole result will be displayed
+
+//8.to visulize classified with differerent palette 
+var landCoverPalette = [
+  '#113aff', //water(0)
+  '#cc3712', //Buildings(1)
+  '#0fdc37',//vegetation(2)
+  ];
+Map.addLayer(classified, {palette: landCoverPalette,min: 0, max: 3}, 'Classification', false)
+
+//9. Test the accuracy of the model
+// perform accuracy assessment, classify testSet and get confusion Matrix
+var confusionMatrix = ee.ConfusionMatrix(testSet.classify(classifier)
+.errorMatrix({
+  actual: 'classValue', //training data
+  predicted: 'classification' 
+}));
+
+// result will be shown in the consoul section
+print('Confusion Matrix:', confusionMatrix);
+print('Overall Accuracy:', confusionMatrix.accuracy());
+// how each class is accurately predicted by the model
+print('Producers Accuracy:', confusionMatrix.producersAccuracy());
+print('Consumers Accuracy:', confusionMatrix.consumersAccuracy());
+
+//10. Export classified map to Google Drive
+// to export the LandSat_8_Classified_CART to google drive, from Task run
+Export.image.toDrive({
+  image: classified,
+  description: 'LandSat_8_Classified_CART',
+  scale: 30,
+  region: roi,
+  maxPixels: 1e13
+});
+
+```
