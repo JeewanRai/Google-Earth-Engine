@@ -404,3 +404,103 @@ Export.image.toDrive({
 });
 
 ```
+# Lab 6 Plotting Spectral Response Curves
+![alt text](image-32.png)                                                   
+ ```js
+// loading dataset 
+var image = ee.Image(ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
+.filterBounds(roi)
+.filterDate('2016-05-01', '2016-06-30')
+.sort('CLOUD_COVER')
+.first());
+
+Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 3000}, 'TrueColor Image', false);
+
+//Choose bands to include and define feature collection to use
+var subset = image.select('B[1-7]')
+var samples = ee.FeatureCollection([Water,Forest]);
+
+// Define customization options.
+var plotOptions = {
+  title: 'Landsat-8  Surface reflectance spectra',
+  hAxis: {title: 'Wavelength (nanometers)'},
+  vAxis: {title: 'Reflectance'},
+  lineWidth: 1,
+  pointSize: 4,
+  series: {
+    0: {color: 'blue'}, // Water
+    1: {color: 'green'}, // Forest
+}};
+
+// Create the scatter chart
+var Chart1 = ui.Chart.image.regions(
+    subset, samples, ee.Reducer.mean(), 10, 'label')
+        .setChartType('ScatterChart');
+print(Chart1);
+
+// Define a list of Landsat-8 wavelengths for X-axis labels.
+var wavelengths = [443, 482, 562, 655, 865, 1609, 2201];
+ ```                                                                
+ Output:                                                              
+ ![alt text](image-33.png)
+
+# NDVI Computation Youtube Video
+[Click Here](https://youtu.be/PwM1isExZec?si=pc49y-i0m31LN_xA) Youtube vide for NDVI calculation                                              
+![alt text](image-27.png)
+![alt text](image-28.png)
+![alt text](image-29.png)                                             
+
+[Click Here](https://code.earthengine.google.com/e277deafea7d1dfd276aab9424dc4145) link for  google earth engine code     
+
+In the **inspector** section can graphs and ploting                   
+
+![alt text](image-30.png)
+
+```js
+// Normalized Difference Vegetation Index, widely used method to monitor 
+// plant growth, vegetation cover, biomass production using remote sensing data
+// NDVI is calculated using the reflectance values in the red (RED) and near-infrared 
+// (NIR) bands of the electromagnetic spectrum. 
+// The formula for NDVI is:
+// NDVI= (NIR+RED)/(NIR−RED)
+// NDVI is commonly used to assess the health and density of vegetation
+// Healthy vegetation reflects more near-infrared light and less visible light,
+// resulting in higher NDVI values
+// It helps in identifying stressed vegetation which reflects more visible light 
+// and less near-infrared light, resulting in lower NDVI values.
+
+//Step 1. Identify the roi
+//Step 2. Import satellite image 
+var image = ee.ImageCollection('COPERNICUS/S2_SR')
+  .filterDate('2022-10-01', '2022-11-30')
+  .filterBounds(roi); // Select the first image from the filtered collection
+
+// Add the selected image to the map
+Map.addLayer(image, {}, 'Selected Image', false);
+
+//Step 3. Create function to compute NDVI/ convert function to tools/ creating function for image
+// Step 3. Create a function to compute NDVI
+var NDVI = function(image) {
+  return image.expression(
+    '((NIR + RED) / (NIR - RED))', // Corrected expression
+    {
+      'NIR': image.select('B8'), // Take NIR from image (band 8 in Sentinel-2)
+      'RED': image.select('B4'), // In Sentinel-2, B4 corresponds to red
+    }
+  ).rename('NDVI').copyProperties(image, image.propertyNames());
+};
+
+// Calculating NDVI for each image in the collection
+//gives NDVI of one single pixel
+var NDVI_2022 = image.map(NDVI);
+Map.addLayer(NDVI_2022, {}, 'NDVI_2022', false);
+
+// Calculating NDVI of months 
+// in the NDVI custom color palette formleft to right indicates strong in the left and weak
+// towrds the end of right
+var mean_NDVI = NDVI_2022.mean()
+Map.addLayer(mean_NDVI, imageVisParam, 'Mean_NDVI', false)
+```
+Output:                                                             
+![alt text](image-31.png)
+
